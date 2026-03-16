@@ -158,7 +158,9 @@ from  langgraph import version
 import openai
 from dotenv import load_dotenv
 load_dotenv()
-
+```
+运行结果
+```
 print("LangChain版本：", langchain.__version__)
 print("LangGraph版本：", version.__version__)
 print("OpenAI版本：", openai.__version__)
@@ -292,13 +294,11 @@ llm = ChatOpenAI(
 )
 
 # 5. 定义 State
-# 5. 定义 State
 class WorkflowState(TypedDict):
-    user_role: str
-    original_advice: str
-    simplified_advice: str
+    user_role: str  # 存储用户角色
+    original_advice: str  # 存储原始学习建议
+    simplified_advice: str  # 存储精简后的建议
 
-# 6. 定义节点
 # 6. 定义节点
 def generate_advice(state: WorkflowState):
     prompt = f"给{state['user_role']}写一段50字左右的 AI 学习建议。"
@@ -310,7 +310,6 @@ def simplify_advice(state: WorkflowState):
     result = llm.invoke(prompt)
     return {"simplified_advice": result.content}
 
-# 7. 构建工作流
 # 7. 构建工作流
 workflow = StateGraph(WorkflowState)
 
@@ -324,10 +323,8 @@ workflow.add_edge("simplify", END)
 app = workflow.compile()
 
 # 8. 执行
-# 8. 执行
 result = app.invoke({"user_role": "高校学生"})
 
-# 9. 输出
 # 9. 输出
 print("原始学习建议：")
 print(result["original_advice"])
@@ -365,7 +362,7 @@ AI时代，学习建议：掌握基础数学与编程，动手实践项目；保
 ## 1.6 本章练习
 
 1. 复现本章两个案例的代码，确保能成功运行；
-2. 修改LangChain案例的PromptTemplate，把“AI学习建议”改成“LangChain学习建议”，观察生成结果；
+2. 修改LangChain案例的Prompt，把“AI学习建议”改成“LangChain学习建议”，观察生成结果；
 3. 修改LangGraph案例的工作流，添加一个“第三步节点”（比如“把精简后的建议翻译成英文”），重新编译并执行；
 4. 思考：如果要开发一个“智能问答机器人”（只需要简单对话，不用多步骤），应该用LangChain还是LangGraph？为什么？
 
