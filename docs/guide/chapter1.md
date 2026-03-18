@@ -13,7 +13,8 @@
 
 ## 1.1 为什么需要LangChain和LangGraph
 
-在正式开始前，先跟大家确认下前置知识——不需要你是Python大神，只要能看懂基础的变量、函数，会用终端输简单命令就行；对大模型有个模糊的概念（比如知道LLM是大语言模型）就足够了，不用深入了解原理。如果这些基础你都具备，那我们可以直接出发；如果有些遗忘也没关系，遇到相关知识点可以去搜索相关的资料，帮你回忆起来。
+在正式开始前，先跟大家确认下前置知识——不需要你是Python大神，只要能看懂基础的变量、函数，会用终端输入简单命令就行；对大模型有个模糊的概念（比如知道LLM是大语言模型）就足够了，不用深入了解原理。如果这些基础你都具备，那我们可以直接出发；如果有些遗忘也没关系，遇到相关知识点可以去搜索相关的资料，帮你回忆起来。
+在正式开始前，先跟大家确认下前置知识——不需要你是Python大神，只要能看懂基础的变量、函数，会用终端输入简单命令就行；对大模型有个模糊的概念（比如知道LLM是大语言模型）就足够了，不用深入了解原理。如果这些基础你都具备，那我们可以直接出发；如果有些遗忘也没关系，遇到相关知识点可以去搜索相关的资料，帮你回忆起来。
 
 我们先从一个常见的开发场景说起：假设你想做一个“智能论文助手”，功能很简单，就是帮用户总结论文内容、解答论文里的疑问。如果现在没有任何框架，全靠自己写代码，你会发现要解决一堆麻烦事。
 
@@ -112,7 +113,7 @@ source langent-env/bin/activate
 
 **方式二：使用 Conda**
 
-```python
+```bash
 # 1. 创建虚拟环境（建议 Python 3.10）
 conda create -n langent-env python=3.10 -y
 
@@ -124,7 +125,7 @@ conda activate langent-env
 ✅ **激活成功标志**：终端前会出现 `(langent-env)`
 
 ```
-(langent-env) PS C:\Users\xiong\Desktop\easy-langent>
+(langent-env) PS C:\Users\Username\Desktop\easy-langent>
 ```
 
 ⚠️ 注意事项：
@@ -136,16 +137,16 @@ conda activate langent-env
 
 在激活的虚拟环境中，执行以下命令安装LangChain、LangGraph及常用依赖：
 
-```python
+```bash
 # 安装LangChain核心库
-pip install langchain  
+pip install langchain
 # 安装LangGraph
 pip install langgraph
 # 安装OpenAI依赖（用于调用OpenAI模型，我们案例用这个）
 pip install openai
 pip install langchain_openai
 
-# 安装其他辅助依赖（可选，后续章节会用到）
+# 安装其他辅助依赖
 pip install python-dotenv  # 用于管理环境变量（存储API密钥）
 ```
 
@@ -155,13 +156,14 @@ pip install python-dotenv  # 用于管理环境变量（存储API密钥）
 import langchain
 from  langgraph import version
 import openai
+from dotenv import load_dotenv
+load_dotenv()
+```
+运行结果
+```
 print("LangChain版本：", langchain.__version__)
 print("LangGraph版本：", version.__version__)
 print("OpenAI版本：", openai.__version__)
-
-LangChain版本： 1.2.3
-LangGraph版本： 1.0.5
-OpenAI版本： 2.15.0
 ```
 
 > **注意：** LangChain 和 LangGraph 必须安装**1.0.0以后**的版本，1.0.0以前的版本与1.0.0以后的版本不兼容，会对学习产生比较大的影响！！！
@@ -184,12 +186,19 @@ OpenAI版本： 2.15.0
 用编辑器打开`.env文件`，写入以下内容（替换成你的API密钥）：
 
 ```python
-# 1. 在项目文件夹（easy-langent）中新建一个文件，命名为“.env”（注意前面有个点）
+# 1. 在项目文件夹（easy-langent）中新建一个文件，命名为".env"（注意前面有个点）
 # 2. 用编辑器打开.env文件，写入以下内容（替换成你的API密钥）：
-API_KEY="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+API_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+BASE_URL="xxxxxx"
 
-# 3. 在代码中导入dotenv加载密钥（后续案例会用到）
+# 3. 调用环境变量
+from dotenv import load_dotenv
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
+BASE_URL = os.getenv("BASE_URL")  # API地址，使用你的模型对应的地址（如DeepSeek: https://api.deepseek.com）
 ```
+
+> 在配置调用大模型服务时，通常需要输入 API Key、Token 或各类平台密码，为了安全起见一般是将这类密码配置到环境变量中，而不是直接写到代码中，密钥被恶意盗用，将会导致严重的经济损失或隐私泄露。
 
 ### 1.3.3 常见错误解决
 
@@ -216,7 +225,7 @@ load_dotenv()
 
 # 3. 配置 API Key
 API_KEY = os.getenv("API_KEY")
-BASE_URL = "https://api.deepseek.com"
+BASE_URL = os.getenv("BASE_URL")
 
 if not API_KEY:
     raise ValueError("未检测到 API_KEY，请检查 .env 文件是否配置正确")
@@ -225,7 +234,7 @@ if not API_KEY:
 llm = ChatOpenAI(
     api_key=API_KEY,
     base_url=BASE_URL,
-    model="deepseek-chat",
+    model="deepseek-chat",  #注意修改这里的模型名称！！！！ 后面章节不再继续说明
     temperature=0.3
 )
 
@@ -274,28 +283,28 @@ from dotenv import load_dotenv
 # 2. 加载API密钥
 load_dotenv()
 
-# 3. 初始化大模型（和LangChain案例一样）
+# 3. 配置 API Key
 API_KEY = os.getenv("API_KEY")
-BASE_URL = "https://api.deepseek.com"
+BASE_URL = os.getenv("BASE_URL")
 
 if not API_KEY:
     raise ValueError("未检测到 API_KEY，请检查 .env 文件是否配置正确")
 
-# 4. 初始化大模型
+# 4. 初始化大模型（和LangChain案例一样）
 llm = ChatOpenAI(
     api_key=API_KEY,
     base_url=BASE_URL,
-    model="deepseek-chat",
+    model="deepseek-chat", #注意修改这里的模型名称！！！！ 后面章节不再继续说明
     temperature=0.3
 )
 
-# 4. 定义 State
+# 5. 定义 State
 class WorkflowState(TypedDict):
-    user_role: str
-    original_advice: str
-    simplified_advice: str
+    user_role: str  # 存储用户角色
+    original_advice: str  # 存储原始学习建议
+    simplified_advice: str  # 存储精简后的建议
 
-# 5. 定义节点
+# 6. 定义节点
 def generate_advice(state: WorkflowState):
     prompt = f"给{state['user_role']}写一段50字左右的 AI 学习建议。"
     result = llm.invoke(prompt)
@@ -306,7 +315,7 @@ def simplify_advice(state: WorkflowState):
     result = llm.invoke(prompt)
     return {"simplified_advice": result.content}
 
-# 6. 构建工作流
+# 7. 构建工作流
 workflow = StateGraph(WorkflowState)
 
 workflow.add_node("generate", generate_advice)
@@ -318,10 +327,10 @@ workflow.add_edge("simplify", END)
 
 app = workflow.compile()
 
-# 7. 执行
+# 8. 执行
 result = app.invoke({"user_role": "高校学生"})
 
-# 8. 输出
+# 9. 输出
 print("原始学习建议：")
 print(result["original_advice"])
 print("\n精简后学习建议：")
@@ -348,7 +357,7 @@ AI时代，学习建议：掌握基础数学与编程，动手实践项目；保
 
 对比LangChain案例：这个案例的核心是“流程管控”——我们明确定义了“生成→精简”的顺序，并且用状态存储了中间结果，这就是LangGraph处理多步骤任务的优势。
 
-## 1.5 本章小节
+## 1.5 本章小结
 
 1. 核心认知：LangChain是“基础工具包”（快速搭简单应用），LangGraph是“架构框架”（管控复杂流程），两者互补融合；
 2. 实操重点：开发环境搭建（虚拟环境+依赖+API密钥）是后续所有学习的基础，必须跑通；
@@ -357,7 +366,7 @@ AI时代，学习建议：掌握基础数学与编程，动手实践项目；保
 ## 1.6 本章练习
 
 1. 复现本章两个案例的代码，确保能成功运行；
-2. 修改LangChain案例的PromptTemplate，把“AI学习建议”改成“LangChain学习建议”，观察生成结果；
+2. 修改LangChain案例的Prompt，把“AI学习建议”改成“LangChain学习建议”，观察生成结果；
 3. 修改LangGraph案例的工作流，添加一个“第三步节点”（比如“把精简后的建议翻译成英文”），重新编译并执行；
 4. 思考：如果要开发一个“智能问答机器人”（只需要简单对话，不用多步骤），应该用LangChain还是LangGraph？为什么？
 
