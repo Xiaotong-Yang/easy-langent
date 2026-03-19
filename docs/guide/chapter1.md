@@ -188,7 +188,7 @@ print("OpenAI版本：", openai.__version__)
 用编辑器打开`.env文件`，写入以下内容（替换成你的API密钥）：
 
 ```env
-API_KEY=你的API密钥
+API_KEY=YOUR_API_KEY
 BASE_URL=https://api.deepseek.com
 ```
 
