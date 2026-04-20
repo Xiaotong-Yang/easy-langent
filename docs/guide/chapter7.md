@@ -243,12 +243,16 @@ math_agent = ChatPromptTemplate.from_messages([
 
 # ================== 动态 Supervisor 节点 ==================
 def supervisor_node(state: TaskState):
-    state["round_count"] += 1
+    new_round = state["round_count"] + 1
 
     # 超过最大轮次，触发兜底
-    if state["round_count"] > MAX_ROUNDS:
+    if new_round > MAX_ROUNDS:
         print(f"⚠️ 超过最大轮次 {MAX_ROUNDS}，触发兜底 → 结束任务")
-        return {**state, "next_agent": "end", "supervisor_thoughts": "轮次数超过上限，直接结束任务"}
+        return {
+            "round_count": new_round,
+            "next_agent": "end",
+            "supervisor_thoughts": "轮次数超过上限，直接结束任务"
+        }
 
     # 中文提示词，严格约束 LLM
     prompt = f"""
@@ -280,11 +284,15 @@ def supervisor_node(state: TaskState):
 
     res = llm.invoke(prompt)
     thoughts = res.content.strip()
-    # 取最后一行作为 next_agent
     next_agent = thoughts.splitlines()[-1].strip()
     print(f"🧠 主管思考过程：\n{thoughts}\n")
-    print(f"🧠 主管调度 → {next_agent} (轮次 {state['round_count']})")
-    return {**state, "next_agent": next_agent, "supervisor_thoughts": thoughts}
+    print(f"🧠 主管调度 → {next_agent} (轮次 {new_round})")
+    
+    return {
+        "round_count": new_round,
+        "next_agent": next_agent,
+        "supervisor_thoughts": thoughts
+    }
 
 # ================== 员工节点 ==================
 def research_node(state: TaskState):
@@ -294,7 +302,12 @@ def research_node(state: TaskState):
         result = res.content.strip()
     except Exception as e:
         result = f"调研失败：{str(e)[:50]}"
-    return {**state, "research": result, "result": result}
+    
+    # ✅ 正确写法：只返回更新字段
+    return {
+        "research": result,
+        "result": result
+    }
 
 def writer_node(state: TaskState):
     print(">>> Writer Agent 执行中...")
@@ -303,7 +316,12 @@ def writer_node(state: TaskState):
         result = res.content.strip()
     except Exception as e:
         result = f"写作失败：{str(e)[:50]}"
-    return {**state, "draft": result, "result": result}
+    
+    # ✅ 正确写法
+    return {
+        "draft": result,
+        "result": result
+    }
 
 def code_node(state: TaskState):
     print(">>> Code Agent 执行中...")
@@ -312,7 +330,12 @@ def code_node(state: TaskState):
         result = res.content.strip()
     except Exception as e:
         result = f"代码生成失败：{str(e)[:50]}"
-    return {**state, "code": result, "result": result}
+    
+    # ✅ 正确写法
+    return {
+        "code": result,
+        "result": result
+    }
 
 def math_node(state: TaskState):
     print(">>> Math Agent 执行中...")
@@ -321,7 +344,12 @@ def math_node(state: TaskState):
         result = res.content.strip()
     except Exception as e:
         result = f"数学求解失败：{str(e)[:50]}"
-    return {**state, "math": result, "result": result}
+    
+    # ✅ 正确写法
+    return {
+        "math": result,
+        "result": result
+    }
 
 # ================== 构建 LangGraph ==================
 workflow = StateGraph(TaskState)
